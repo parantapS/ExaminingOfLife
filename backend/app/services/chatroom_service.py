@@ -5,7 +5,7 @@ from backend.app.services.llm_service import call_llm, build_llm_messages
 from backend.app.core.conversation_mode import ConversationMode
 from backend.app.services.command_parser import parse_command
 
-MAX_DEBATE_TURNS = 4
+MAX_DEBATE_TURNS = 2
 
 class ChatRoom:
     def __init__(self):
@@ -28,16 +28,6 @@ class ChatRoom:
             )
         )
 
-    # def handle_input(self, text: str):
-    #     command_type, value = parse_command(text)
-
-    #     if command_type == "mode":
-    #         self.set_mode(value)
-    #         return
-
-    #     # Normal human message
-    #     self.add_message("human", text)
-
     def add_message(self, role: str, content: str):
         self.history.append(ChatMessage(role=role, content=content))
 
@@ -47,16 +37,19 @@ class ChatRoom:
     async def respond_nietzsche(self):
         reply = await call_llm(
             model="anthropic/claude-3-5-sonnet",
-            messages=build_llm_messages(self.history, NIETZSCHE_PROMPT),
+            messages=build_llm_messages(self.history, NIETZSCHE_PROMPT, speaking_agent="nietzsche"),
         )
-        self.add_message("nietzsche", reply)
+        if reply and reply.strip():
+            self.add_message("nietzsche", reply)
 
     async def respond_dostoevsky(self):
         reply = await call_llm(
             model="openai/gpt-4o-mini",
-            messages=build_llm_messages(self.history, DOSTOEVSKY_PROMPT),
+            messages=build_llm_messages(self.history, DOSTOEVSKY_PROMPT, speaking_agent="dostoevsky"),
         )
-        self.add_message("dostoevsky", reply)
+        if reply and reply.strip():
+            self.add_message("dostoevsky", reply)
+        
 
     async def run_turn(self, text: str):
         command_type, mode, content = parse_command(text)

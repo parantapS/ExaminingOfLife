@@ -36,19 +36,36 @@ async def call_llm(model: str, messages: list[dict]) -> str:
     return data["choices"][0]["message"]["content"]
 
 # History Translation (Boundary Layer)
-def build_llm_messages(
-    history: list[ChatMessage],
-    system_prompt: str,
-):
+def build_llm_messages(history: list[ChatMessage], system_prompt: str, speaking_agent: str):
     messages = [{"role": "system", "content": system_prompt}]
 
     for msg in history:
         if msg.role == "human":
             messages.append({"role": "user", "content": msg.content})
-        elif msg.role in ["nietzsche", "dostoevsky"]:
+        elif msg.role == speaking_agent:
             messages.append({"role": "assistant", "content": msg.content})
+        else:
+            # Other agent messages appear as 'user' with label
+            messages.append({
+                "role": "user",
+                "content": f"[{msg.role}]: {msg.content}"
+            })
 
     return messages
+
+# def build_llm_messages(
+#     history: list[ChatMessage],
+#     system_prompt: str,
+# ):
+#     messages = [{"role": "system", "content": system_prompt}]
+
+#     for msg in history:
+#         if msg.role == "human":
+#             messages.append({"role": "user", "content": msg.content})
+#         elif msg.role in ["nietzsche", "dostoevsky"]:
+#             messages.append({"role": "assistant", "content": msg.content})
+
+#     return messages
 
 
 
