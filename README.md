@@ -30,16 +30,32 @@ Phase 2.1 adds a **multi-model chatroom** foundation:
 
 ---
 
+## Phase 2.2
+
+Phase 2.2 adds **full LLM integration** to the chatroom:
+
+- **Live philosopher responses** — Nietzsche and Dostoevsky personas now call real LLMs:
+  - **Nietzsche** uses `anthropic/claude-3-5-sonnet`
+  - **Dostoevsky** uses `openai/gpt-4o-mini`
+- **`run_turn`** — Main orchestration that processes user input, slash commands, and triggers LLM responses
+- **Direct questions** — `/ask nietzsche` and `/ask dostoevsky` send the question to that persona and get an LLM reply
+- **Debate mode** — `/debate` triggers alternating responses from both philosophers (4 turns each)
+- **HUMAN_TO_ALL** — When in human-to-all mode, both philosophers respond to each human message (Dostoevsky first, then Nietzsche)
+- **`respond_nietzsche()` / `respond_dostoevsky()`** — Async methods that call Open Router with persona prompts and append replies to history
+- **`build_llm_messages`** — Converts chat history to Open Router format with persona-specific system prompts
+
+---
+
 ## Tech Stack
 
-| Component        | Technology                          |
-|-----------------|-------------------------------------|
-| Web framework   | FastAPI                             |
-| HTTP client     | httpx (async)                       |
-| Config / env     | python-dotenv                       |
-| Server          | Uvicorn                             |
-| LLM gateway     | Open Router API                     |
-| Model           | openai/gpt-4o-mini                  |
+| Component        | Technology                                               |
+|-----------------|----------------------------------------------------------|
+| Web framework   | FastAPI                                                  |
+| HTTP client     | httpx (async)                                            |
+| Config / env     | python-dotenv                                            |
+| Server          | Uvicorn                                                  |
+| LLM gateway     | Open Router API                                          |
+| Models          | openai/gpt-4o-mini, anthropic/claude-3-5-sonnet          |
 
 ---
 
@@ -185,6 +201,7 @@ Example response:
 
 - **Phase One** = FastAPI backend + Open Router + **gpt-4o-mini**, with one chat endpoint and a health check.
 - **Phase 2.1** = Chatroom foundation with conversation modes, slash commands, personas, and `/chatroom/input` endpoint.
+- **Phase 2.2** = Full LLM integration: Nietzsche (Claude) and Dostoevsky (GPT-4o-mini) respond live; direct questions, debate mode, and human-to-all conversations.
 - **Project layout** = `backend/app` (main, api, core, models, services) plus config, schemas, personas, conversation modes.
 - **Routing** = `GET /` (health), `POST /chat/openai` (chat), `POST /chatroom/input` (chatroom); docs at `/docs` and `/redoc`.
 - **Config** = `OPENROUTER_API_KEY` in `.env`, loaded in `backend/app/core/config.py`.
