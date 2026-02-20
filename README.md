@@ -4,7 +4,7 @@ A multi-LLM chatroom backend that connects to the **Open Router API** to call va
 
 ---
 
-## Phase One (Current)
+## Phase One
 
 Phase One focuses on:
 
@@ -13,6 +13,20 @@ Phase One focuses on:
 - Using the **openai/gpt-4o-mini** model for chat completions
 - Request/response validation with **Pydantic**
 - Environment-based configuration for the API key
+
+---
+
+## Phase 2.1
+
+Phase 2.1 adds a **multi-model chatroom** foundation:
+
+- **Chatroom API** — `POST /chatroom/input` endpoint for conversation-style input
+- **Conversation modes** — `PAUSED`, `HUMAN_TO_ALL`, `HUMAN_TO_NIETZSCHE`, `HUMAN_TO_DOSTOEVSKY`, `DEBATE`
+- **Slash commands** — `/pause`, `/resume`, `/debate`, `/ask nietzsche`, `/ask dostoevsky`
+- **ChatMessage model** — Message roles: `human`, `nietzsche`, `dostoevsky`, `system`
+- **Personas** — Nietzsche and Dostoevsky philosopher personas (for future LLM integration)
+- **Command parser** — Parses user input into mode changes vs regular messages
+- **build_llm_messages** — Helper in `llm_service` to convert chat history to LLM format
 
 ---
 
@@ -45,13 +59,19 @@ examiningoflife/
 │   └── app/
 │       ├── main.py         # FastAPI app, router registration, health check
 │       ├── api/
-│       │   └── chat.py     # Chat API routes (/chat/openai)
+│       │   ├── chat.py     # Chat API routes (/chat/openai)
+│       │   └── chatroom.py # Chatroom API routes (/chatroom/input)
 │       ├── core/
-│       │   └── config.py  # Settings and env loading (OPENROUTER_API_KEY)
+│       │   ├── config.py           # Settings and env loading (OPENROUTER_API_KEY)
+│       │   ├── conversation_mode.py # ConversationMode enum
+│       │   └── personas.py         # Philosopher personas (Nietzsche, Dostoevsky)
 │       ├── models/
-│       │   └── schemas.py  # Pydantic models: ChatRequest, ChatResponse
+│       │   ├── schemas.py  # Pydantic models: ChatRequest, ChatResponse
+│       │   └── messages.py # ChatMessage model for chatroom
 │       └── services/
-│           └── llm_service.py  # Open Router API client (call_llm)
+│           ├── llm_service.py      # Open Router API client (call_llm, build_llm_messages)
+│           ├── chatroom_service.py # ChatRoom state, mode switching, history
+│           └── command_parser.py   # Slash command parsing
 │
 └── frontend/               # Reserved for future frontend
 ```
@@ -68,10 +88,11 @@ examiningoflife/
 
 All HTTP routes are defined in the FastAPI app in `backend/app/main.py` and the chat router in `backend/app/api/chat.py`.
 
-| Method | Path           | Description |
-|--------|----------------|-------------|
-| `GET`  | `/`            | Health check. Returns `{"status": "ok"}`. |
-| `POST` | `/chat/openai` | Chat with the AI. Body: `{"message": "your text"}`. Returns `{"reply": "..."}`. |
+| Method | Path              | Description |
+|--------|-------------------|-------------|
+| `GET`  | `/`               | Health check. Returns `{"status": "ok"}`. |
+| `POST` | `/chat/openai`    | Chat with the AI. Body: `{"message": "your text"}`. Returns `{"reply": "..."}`. |
+| `POST` | `/chatroom/input` | Send input to chatroom. Query: `?text=...`. Accepts slash commands or human messages. Returns conversation history. |
 
 - The **chat** router is registered with **prefix** `"/chat"` and **tags** `["chat"]`, so the full path for the current endpoint is **`/chat/openai`**.
 - OpenAPI docs (Swagger UI): **`/docs`** when the server is running.
@@ -163,6 +184,7 @@ Example response:
 ## Summary
 
 - **Phase One** = FastAPI backend + Open Router + **gpt-4o-mini**, with one chat endpoint and a health check.
-- **Project layout** = `backend/app` (main, api, core, models, services) plus config and schemas.
-- **Routing** = `GET /` (health), `POST /chat/openai` (chat); docs at `/docs` and `/redoc`.
+- **Phase 2.1** = Chatroom foundation with conversation modes, slash commands, personas, and `/chatroom/input` endpoint.
+- **Project layout** = `backend/app` (main, api, core, models, services) plus config, schemas, personas, conversation modes.
+- **Routing** = `GET /` (health), `POST /chat/openai` (chat), `POST /chatroom/input` (chatroom); docs at `/docs` and `/redoc`.
 - **Config** = `OPENROUTER_API_KEY` in `.env`, loaded in `backend/app/core/config.py`.

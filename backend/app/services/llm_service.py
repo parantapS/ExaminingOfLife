@@ -32,3 +32,18 @@ async def call_llm(
         data = response.json()
 
     return data["choices"][0]["message"]["content"]
+    
+
+def build_llm_messages(history, system_prompt):
+    messages = [{"role": "system", "content": system_prompt}]
+
+    for msg in history:
+        if msg.role == "human":
+            messages.append({"role": "user", "content": msg.content})
+        else:
+            messages.append({"role": "assistant", "content": msg.content})
+
+    return messages
+
+
+
