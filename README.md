@@ -192,7 +192,9 @@ uvicorn backend.app.main:app --reload
 From the **project root**:
 
 ```bash
-uv run python ui/gradio_app.py
+uv run python ui/gradio_app.py 
+or
+uv run python -m ui.gradio_app
 ```
 
 - Opens a local web UI for chatting with Nietzsche and Dostoevsky.
