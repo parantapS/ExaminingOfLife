@@ -46,11 +46,24 @@ Phase 2.2 adds **full LLM integration** to the chatroom:
 
 ---
 
+## Phase 2.3
+
+Phase 2.3 adds a **Gradio web UI** for the chatroom:
+
+- **Gradio app** — `ui/gradio_app.py` provides a chat interface that connects to the ChatRoom service
+- **Live chat** — Users type messages or slash commands (e.g. `/ask nietzsche`, `/debate`) directly in the UI
+- **Philosopher styling** — Nietzsche responses shown in **red**, Dostoevsky responses in **blue** for visual distinction
+- **Shared ChatRoom instance** — The Gradio app reuses the backend `ChatRoom` service for full conversation flow
+- **Gradio dependency** — Added to `pyproject.toml` for the web UI
+
+---
+
 ## Tech Stack
 
 | Component        | Technology                                               |
 |-----------------|----------------------------------------------------------|
 | Web framework   | FastAPI                                                  |
+| Web UI          | Gradio                                                   |
 | HTTP client     | httpx (async)                                            |
 | Config / env     | python-dotenv                                            |
 | Server          | Uvicorn                                                  |
@@ -88,6 +101,9 @@ examiningoflife/
 │           ├── llm_service.py      # Open Router API client (call_llm, build_llm_messages)
 │           ├── chatroom_service.py # ChatRoom state, mode switching, history
 │           └── command_parser.py   # Slash command parsing
+│
+├── ui/
+│   └── gradio_app.py       # Gradio chat UI for the chatroom
 │
 └── frontend/               # Reserved for future frontend
 ```
@@ -171,6 +187,17 @@ uvicorn backend.app.main:app --reload
 - Server runs at **http://127.0.0.1:8000** by default.
 - **`--reload`** restarts the server when code changes.
 
+### Running the Gradio UI (Phase 2.3)
+
+From the **project root**:
+
+```bash
+uv run python ui/gradio_app.py
+```
+
+- Opens a local web UI for chatting with Nietzsche and Dostoevsky.
+- Supports slash commands: `/ask nietzsche`, `/ask dostoevsky`, `/debate`, `/pause`, `/resume`.
+
 ---
 
 ## Example API Usage
@@ -202,6 +229,7 @@ Example response:
 - **Phase One** = FastAPI backend + Open Router + **gpt-4o-mini**, with one chat endpoint and a health check.
 - **Phase 2.1** = Chatroom foundation with conversation modes, slash commands, personas, and `/chatroom/input` endpoint.
 - **Phase 2.2** = Full LLM integration: Nietzsche (Claude) and Dostoevsky (GPT-4o-mini) respond live; direct questions, debate mode, and human-to-all conversations.
+- **Phase 2.3** = Gradio web UI for the chatroom with philosopher-styled responses and slash-command support.
 - **Project layout** = `backend/app` (main, api, core, models, services) plus config, schemas, personas, conversation modes.
 - **Routing** = `GET /` (health), `POST /chat/openai` (chat), `POST /chatroom/input` (chatroom); docs at `/docs` and `/redoc`.
 - **Config** = `OPENROUTER_API_KEY` in `.env`, loaded in `backend/app/core/config.py`.
